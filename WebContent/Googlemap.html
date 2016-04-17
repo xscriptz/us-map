@@ -5,70 +5,170 @@
    <title>Google Maps JavaScript API v3 Example: Limit Panning</title> 
    <script type="text/javascript" 
            src="http://maps.google.com/maps/api/js?sensor=false"></script>
-            <script type="text/javascript" src="d3.js"></script>
+            <script type="text/javascript" src="d3.min.js"></script>
+            <script type="text/javascript" src="Jquery.js"></script>
            <script type="text/javascript" src="US-lalong.js"></script>
 </head> 
 <body> 
    <div id="map" style="width: 800px; height: 500px;"></div> 
 
    <script type="text/javascript"> 
-d3.csv("2010CensusPopulationData.csv",function(error,csvDataObj){
-	//console.log(zipCodeObj);
-   var minZoomLevel = 4;
+   d3.csv("2010CensusPopulationData.csv",function(error,csvDataObj){
+		//console.log(zipCodeObj);
+	   var minZoomLevel = 4;
 
-   var map = new google.maps.Map(document.getElementById('map'), {
-      zoom: minZoomLevel,
-      center: new google.maps.LatLng(38.50, -90.50),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-   });
+	   var map = new google.maps.Map(document.getElementById('map'), {
+	      zoom: minZoomLevel,
+	      center: new google.maps.LatLng(38.50, -90.50),
+	      mapTypeId: google.maps.MapTypeId.ROADMAP
+	   });
 
-   // Bounds for North America
-   var allowedBounds = new google.maps.LatLngBounds(
-     new google.maps.LatLng(28.70, -127.50), 
-     new google.maps.LatLng(48.85, -55.90));
+	   // Bounds for North America
+	   var allowedBounds = new google.maps.LatLngBounds(
+	     new google.maps.LatLng(28.70, -127.50), 
+	     new google.maps.LatLng(48.85, -55.90));
 
-   // Listen for the dragend event
-   google.maps.event.addListener(map, 'dragend', function() {
-     if (allowedBounds.contains(map.getCenter())) return;
+	   // Listen for the dragend event
+	   google.maps.event.addListener(map, 'dragend', function() {
+	     if (allowedBounds.contains(map.getCenter())) return;
 
-     // Out of bounds - Move the map back within the bounds
+	     // Out of bounds - Move the map back within the bounds
 
-     var c = map.getCenter(),
-         x = c.lng(),
-         y = c.lat(),
-         maxX = allowedBounds.getNorthEast().lng(),
-         maxY = allowedBounds.getNorthEast().lat(),
-         minX = allowedBounds.getSouthWest().lng(),
-         minY = allowedBounds.getSouthWest().lat();
+	     var c = map.getCenter(),
+	         x = c.lng(),
+	         y = c.lat(),
+	         maxX = allowedBounds.getNorthEast().lng(),
+	         maxY = allowedBounds.getNorthEast().lat(),
+	         minX = allowedBounds.getSouthWest().lng(),
+	         minY = allowedBounds.getSouthWest().lat();
 
-     if (x < minX) x = minX;
-     if (x > maxX) x = maxX;
-     if (y < minY) y = minY;
-     if (y > maxY) y = maxY;
+	     if (x < minX) x = minX;
+	     if (x > maxX) x = maxX;
+	     if (y < minY) y = minY;
+	     if (y > maxY) y = maxY;
 
-     map.setCenter(new google.maps.LatLng(y, x));
-   });
+	     map.setCenter(new google.maps.LatLng(y, x));
+	   });
 
-   // Limit the zoom level
-   google.maps.event.addListener(map, 'zoom_changed', function() {
-     if (map.getZoom() < minZoomLevel) map.setZoom(minZoomLevel);
-   });
-   google.maps.event.addListener(map, 'bounds_changed', function() {
-	   var bounds = map.getBounds();
-	   var ne = bounds.getNorthEast(); // LatLng of the north-east corner
-	   var sw = bounds.getSouthWest(); // LatLng of the south-west corder
-	   var counter = 0;
-	   var nw = new google.maps.LatLng(ne.lat(), sw.lng());
-	   var se = new google.maps.LatLng(sw.lat(), ne.lng());
-	   console.log("North East: "+ne + "  " +"South West: "+ sw + "North West: "+nw + "South East: "+se);
-	   for(var i=0;i<zipCodeObj.length;i++){
-		   if((zipCodeObj[i].Latitude >= sw.lat()) && (zipCodeObj[i].Latitude <= nw.lat()) && (zipCodeObj[i].Longitude >= nw.lng()) && (zipCodeObj[i].Longitude <= ne.lng())){
-			   counter++;
+	   // Limit the zoom level
+	   google.maps.event.addListener(map, 'zoom_changed', function() {
+	     if (map.getZoom() < minZoomLevel) map.setZoom(minZoomLevel);
+	   });
+	   google.maps.event.addListener(map, 'bounds_changed', function() {
+		   var bounds = map.getBounds();
+		   var ne = bounds.getNorthEast(); // LatLng of the north-east corner
+		   var sw = bounds.getSouthWest(); // LatLng of the south-west corder
+		   var counter = 0,zipCodesArray = [],zipCodesArray1 = [],zipCodesArray2 = [],zipCodesArray3 = [];
+		   var nw = new google.maps.LatLng(ne.lat(), sw.lng());
+		   var se = new google.maps.LatLng(sw.lat(), ne.lng());
+		   console.log("North East: "+ne + "  " +"South West: "+ sw + "North West: "+nw + "South East: "+se);
+		   for(var i=0;i<zipCodeObj.length;i++){
+			   if((zipCodeObj[i].Latitude >= sw.lat()) && (zipCodeObj[i].Latitude <= nw.lat()) && (zipCodeObj[i].Longitude >= nw.lng()) && (zipCodeObj[i].Longitude <= ne.lng())){
+				   counter++;
+				   
+					   zipCodesArray.push(zipCodeObj[i].Zipcode);
+				   
+			   }
 		   }
-	   }
-	   console.log(counter);
-    });
-});   
+		  
+		   
+		   
+			   var populationData1 = [];
+			   var populationData2 = [];
+			   var populationData3 = [];
+			   var dataObjPopulation = {};
+			   dataObjPopulation.Population = {};
+			   dataObjPopulation.PopulationMale = {};
+			   dataObjPopulation.PopulationFemale = {};
+			   dataObjPopulation.ZipCode = {};
+			   for(var j=0;j<csvDataObj.length;j++){  
+		   if(csvDataObj[j].Zip <= 36574)
+		   {
+			   dataObjPopulation.Population = csvDataObj[j].Population;
+			   dataObjPopulation.PopulationMale = csvDataObj[j].PopulationMale;
+			   dataObjPopulation.PopulationFemale = csvDataObj[j].PopulationFemale;
+			   dataObjPopulation.ZipCode = csvDataObj[j].Zip;
+			   populationData1.push(dataObjPopulation);
+			   dataObjPopulation = {}; 
+		   }
+	   else if(csvDataObj[j].Zip > 36574 && csvDataObj[j].Zip <= 61285)
+		   {
+		   zipCodesArray2.push(csvDataObj[j].Zip); dataObjPopulation.Population = csvDataObj[j].Population;
+		   dataObjPopulation.PopulationMale = csvDataObj[j].PopulationMale;
+		   dataObjPopulation.PopulationFemale = csvDataObj[j].PopulationFemale;
+		   dataObjPopulation.ZipCode = csvDataObj[j].Zip;
+		   populationData2.push(dataObjPopulation);
+		   dataObjPopulation = {}; 
+		   }
+	   else
+		   {
+		   dataObjPopulation.Population = csvDataObj[j].Population;
+		   dataObjPopulation.PopulationMale = csvDataObj[j].PopulationMale;
+		   dataObjPopulation.PopulationFemale = csvDataObj[j].PopulationFemale;
+		   dataObjPopulation.ZipCode = csvDataObj[j].Zip;
+		   populationData3.push(dataObjPopulation);
+		   dataObjPopulation = {}; 
+		   }
+			   }
+			Array.prototype.contains = function(obj){
+				for(i in this){
+					if(this[i] == obj) return true;
+				}
+				return false;
+				
+			}   
+			   var finalArray = [];
+			   zipCodesArray = ["60002","60005"];
+			   for(var i=0;i<zipCodesArray.length;i++){
+				   var result = populationData2.filter(function(obj){
+					   return obj.Zip == zipCodesArray[i];
+				   })
+				   var result = $.grep(populationData3,function(e){ return e.Zip == zipCodesArray[i]; });
+				   console.log(result);
+				 /*  if(populationData1.indexOf(zipCodesArray[i]) > -1){
+					   var index = jQuery.inArray(zipCodesArray[i],populationData1);
+					   console.log(index);
+
+				   }
+				   else if(populationData2.indexOf(zipCodesArray[i]) > -1){
+					   var index = jQuery.inArray(zipCodesArray[i],populationData2);
+					   console.log(index);
+				   }
+				   else if(populationData3.indexOf(zipCodesArray[i]) > -1){
+					   var index = jQuery.inArray(zipCodesArray[i],populationData3);
+					   console.log(index);
+
+				   }
+				   else continue;*/
+
+			   
+			   }
+		   //console.log(populationData3);
+		   
+		   /*var populationData = [];
+		   var dataObjPopulation = {};
+		   dataObjPopulation.Population = {};
+		   dataObjPopulation.PopulationMale = {};
+		   dataObjPopulation.PopulationFemale = {};
+		   dataObjPopulation.ZipCode = {};
+		   //console.log(zipCodesArray);
+		    for(var i=0;i<zipCodesArray.length;i++){
+		    	//console.log(zipCodesArray[i]);
+			    for(var j=0;j<csvDataObj.length;j++){
+				   if(csvDataObj[j].Zip == zipCodesArray[i]){
+					    dataObjPopulation.Population = csvDataObj[j].Population;
+					   dataObjPopulation.PopulationMale = csvDataObj[j].PopulationMale;
+					   dataObjPopulation.PopulationFemale = csvDataObj[j].PopulationFemale;
+					   dataObjPopulation.ZipCode = csvDataObj[j].Zip;
+					   populationData.push(dataObjPopulation);
+					   dataObjPopulation = {}; 
+					   //console.log(csvDataObj[j].Population);
+				   }
+			   } 
+		   }*/ 
+		  //console.log(populationData.length);
+	    });
+	});      
 
    </script> 
 </body> 

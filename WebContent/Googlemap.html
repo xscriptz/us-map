@@ -117,14 +117,80 @@
 				return false;
 				
 			}   
-			   var finalArray = [];
-			   zipCodesArray = ["60002","60005"];
+			   var indexArray1 = [];
+			   var indexArray2 = [];
+			   var indexArray3 = [];
+
+			   //int o = 0;
+			   //zipCodesArray = ["10001","36575","95747"];
+			   
+			   
+			   
 			   for(var i=0;i<zipCodesArray.length;i++){
-				   var result = populationData2.filter(function(obj){
+				   
+				   if(zipCodesArray[i] <= 36574)
+					   {
+					   for(var j=0;j<populationData1.length;j++){
+
+						   /*var result = populationData2.filter(function(obj){
+							   return obj.Zip == zipCodesArray[i];
+						   })*/
+						   //var result = $.grep(populationData3,function(e){ return e.Zip == zipCodesArray[i]; });
+						   //console.log(result);
+						   if(populationData1[j]["ZipCode"] == zipCodesArray[i])
+							   {
+							 //console.log(populationData2[j]["Population"]);
+							   //console.log(populationData2[j]["ZipCode"]);
+							   //finalArray[o] = popu
+								indexArray1.push(j);
+							   }
+						   }
+					   	
+					   }
+				   else if(zipCodesArray[i] > 36574 && zipCodesArray[i] <= 61285)
+				   {
+				   for(var j=0;j<populationData2.length;j++){
+
+				   /*var result = populationData2.filter(function(obj){
 					   return obj.Zip == zipCodesArray[i];
-				   })
-				   var result = $.grep(populationData3,function(e){ return e.Zip == zipCodesArray[i]; });
-				   console.log(result);
+				   })*/
+				   //var result = $.grep(populationData3,function(e){ return e.Zip == zipCodesArray[i]; });
+				   //console.log(result);
+				   if(populationData2[j]["ZipCode"] == zipCodesArray[i])
+					   {
+					 //console.log(populationData2[j]["Population"]);
+					   //console.log(populationData2[j]["ZipCode"]);
+					   //finalArray[o] = popu
+						indexArray2.push(j);
+					   }
+				   }
+				   }
+				   else
+					   {
+					   
+					   for(var j=0;j<populationData3.length;j++){
+
+						   /*var result = populationData2.filter(function(obj){
+							   return obj.Zip == zipCodesArray[i];
+						   })*/
+						   //var result = $.grep(populationData3,function(e){ return e.Zip == zipCodesArray[i]; });
+						   //console.log(result);
+						   if(populationData3[j]["ZipCode"] == zipCodesArray[i])
+							   {
+							 //console.log(populationData2[j]["Population"]);
+							   //console.log(populationData2[j]["ZipCode"]);
+							   //finalArray[o] = popu
+								indexArray3.push(j);
+							   }
+						   }
+					   
+					   }
+				   
+				   
+				   
+				   
+				   
+				   
 				 /*  if(populationData1.indexOf(zipCodesArray[i]) > -1){
 					   var index = jQuery.inArray(zipCodesArray[i],populationData1);
 					   console.log(index);
@@ -142,7 +208,42 @@
 				   else continue;*/
 
 			   
+			   
+			  }
+			   //console.log(indexArray);
+			   
+/* Indexing Declaration */
+ 
+			   var dum = 0;
+			   var Arrayviz = []
+			   for(var m = 0; m<indexArray1.length;m++)
+				   {
+				   
+				   		//console.log(populationData2[indexArray[m]]["ZipCode"]);
+				   		//console.log(populationData2[indexArray[m]]["PopulationMale"]);
+				   		 Arrayviz.push(populationData1[indexArray1[m]]);
+						dum++;
+				   }
+			   for(var m = 0; m<indexArray2.length;m++)
+			   {
+			   
+			   		//console.log(populationData2[indexArray[m]]["ZipCode"]);
+			   		//console.log(populationData2[indexArray[m]]["PopulationMale"]);
+			   		//console.log(populationData2[indexArray2[m]]);
+			   		Arrayviz.push(populationData1[indexArray1[m]]);
+
+					dum++;
 			   }
+			   for(var m = 0; m<indexArray3.length;m++)
+			   {
+			   
+			   		//console.log(populationData2[indexArray[m]]["ZipCode"]);
+			   		//console.log(populationData2[indexArray[m]]["PopulationMale"]);
+			   		//console.log(populationData3[indexArray3[m]]);
+					Arrayviz.push(populationData1[indexArray1[m]]);
+			   		dum++;
+			   }
+			   console.log(Arrayviz);
 		   //console.log(populationData3);
 		   
 		   /*var populationData = [];

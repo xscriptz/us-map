@@ -16,15 +16,16 @@
 }
 
 .stations circle {
-  fill: brown;
+  fill: blue;
   stroke: black;
   stroke-width: 1.5px;
+  opacity: 0.3;
 }
     </style>
     <title>Google Maps JavaScript API v3 Example: Limit Panning</title>
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
     <script type="text/javascript" src="d3.v3.js"></script>
-    <script type="text/javascript" src="smallData.js"></script>
+   <!--  <script type="text/javascript" src="smallData.js"></script> -->
     <script type="text/javascript" src="visualizationOnMap.js"></script>
 </head>
 
@@ -79,72 +80,88 @@
                 var sw = bounds.getSouthWest(); // LatLng of the south-west corder
                 var nw = new google.maps.LatLng(ne.lat(), sw.lng());
                 var se = new google.maps.LatLng(sw.lat(), ne.lng());
+                d3.json("smallData.json",function(error,mapData){
                 var zipCodesArray = [];
-                //console.log("North East: " + ne + "  " + "South West: " + sw + "North West: " + nw + "South East: " + se);
-                for (var i = 0; i < finalDataArray.length; i++) {
-                    if ((finalDataArray[i].Latitude >= sw.lat()) && (finalDataArray[i].Latitude <= nw.lat()) && (finalDataArray[i].Longitude >= nw.lng()) && (finalDataArray[i].Longitude <= ne.lng())) {
-                        zipCodesArray.push(finalDataArray[i]);
+                for(var key in mapData){
+					if ((mapData[key].latLong[1] >= sw.lat()) && (mapData[key].latLong[1] <= nw.lat()) && (mapData[key].latLong[0] >= nw.lng()) && (mapData[key].latLong[0] <= ne.lng())) {
+                        mapData[key].state = {};
+                        mapData[key].state = key;
+						zipCodesArray.push(mapData[key]);
                     }
                 }
+               
+                //console.log("North East: " + ne + "  " + "South West: " + sw + "North West: " + nw + "South East: " + se);
+                
+                console.log(zipCodesArray);
                 var overlay = new google.maps.OverlayView();
                 var w = 40;
                 var h = 40;
-                var r = h/2;
+                var outerRadius = w-20;
+                var innerRadius = w-30;
+                var updatedOuterRadius = w * 4;
+                var updatedInnerRadius = w / 2;
                 var color = d3.scale.category20c();
+                var arc = d3.svg.arc()
+                .innerRadius(innerRadius)
+                .outerRadius(outerRadius);
+                var updatedArc = d3.svg.arc()
+                .innerRadius(updatedInnerRadius)
+                .outerRadius(updatedOuterRadius);
+                var pie = d3.layout.pie().value(function (d) {
+                    return d;
+                });
+                
              // Add the container when the overlay is added to the map.
                 overlay.onAdd = function() {
                   var layer = d3.select(this.getPanes().overlayLayer).append("div")
                       .attr("class", "stations");
-                for(var counter=0;counter<zipCodesArray.length;counter++){
-                	drawPieChart(layer,zipCodesArray[counter]);
-                	
-                }
-            }
-                // Bind our overlay to the map…
-                overlay.setMap(map);
-                function drawPieChart(layer,zipCodesArray){
-                	var data = zipCodesArray.data;
-                		//console.log(data);
+             //console.log(d3.entries(zipCodesArray));
                 	overlay.draw = function() {
       				var projection = this.getProjection(),
           			padding = 10;
-      				
       				var marker = layer.selectAll("svg")
-      	          .data([data])
+      	          .data(d3.entries(zipCodesArray))
       	          .each(transform) // update existing markers
-      	        .enter().append("svg")
-      	           .each(transform) 
+      	          .enter().append("svg")
+      	          .each(transform) 
       	          .attr("class", "marker").attr("width", w)
-      	          .attr("height", h).append("g")
-      	          .attr("transform", "translate(" + r + "," + r + ")");
-      				
-      				var pie = d3.layout.pie().value(function(d,i){
-      					return d.value;
-      					//console.log(d.value);
-      					});
-      				var arc = d3.svg.arc().outerRadius(r);
-      			// select paths, use arc generator to draw
-      				var arcs = marker.selectAll("g.slice").data(pie).enter()
-      				.append("svg:g").attr("class", "slice");
-      				arcs.append("svg:path")
-      				    .attr("fill", function(d, i){
-      				        return color(i);
-      				    })
-      				    .attr("d", function (d) {
-      				        // log the result of the arc generator to show how cool it is :)
-      				        //console.log(d);
-      				        return arc(d);
-      				    });
-      				 function transform(d,i) {
-       					console.log(d);
-      					 d = new google.maps.LatLng(zipCodesArray.Latitude, zipCodesArray.Longitude);
-       			        d = projection.fromLatLngToDivPixel(d);
-       			        return d3.select(this)
-       			            .style("left", (d.x - padding) + "px")
-       			            .style("top", (d.y - padding) + "px");
-       			      }
-                	}
-                }
+                  .attr("height",h).style("padding", "4px").style("cursor", "pointer").on("mouseover", function (d) {
+                      d3.select('#text_' + d.key).attr("opacity", 1);}).on("mouseleave", function (d) {
+                          d3.select('#text_' + d.key).attr("opacity", 0);
+                      });
+                          
+                          var arcs = marker.selectAll("g.arc")
+                          .data(function (d) {
+                              return pie(d.value.values);
+                          })
+                          .enter()
+                          .append("g")
+                          .attr("class", "arc")
+                          .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+                           /* .on("mouseover", function (d,i) {
+    							console.log(d[i]);
+							}) */;
+                          arcs.append("path").attr("class", function (d) {
+
+                              return "path_" + d.data.key
+                          })
+                              .attr("fill", function (d, i) {
+                                  return color(i);
+                              }).attr("stroke", "#ffffff").attr("stroke-width", 1.2)
+                              .attr("d", arc);
+      			
+      				  function transform(d) {
+      				      d = new google.maps.LatLng(d.value.latLong[1], d.value.latLong[0]);
+      				      d = projection.fromLatLngToDivPixel(d);
+      				      return d3.select(this)
+      				          .style("left", (d.x) + "px")
+      				          .style("top", (d.y) + "px").attr("fill", "#000000");
+      				  }
+                	};
+             };
+                	// Bind our overlay to the map…
+                    overlay.setMap(map);
+                });
             });
             
     </script>
